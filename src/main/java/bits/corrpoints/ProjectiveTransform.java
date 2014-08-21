@@ -11,10 +11,8 @@ public class ProjectiveTransform implements Transform22 {
     private final double[] mBackward;
 
 
-    public ProjectiveTransform( double[] forwardMatRef,
-                                double[] backwardMatRef )
-    {
-        mForward = forwardMatRef;
+    public ProjectiveTransform( double[] forwardMatRef, double[] backwardMatRef ) {
+        mForward  = forwardMatRef;
         mBackward = backwardMatRef;
     }
 

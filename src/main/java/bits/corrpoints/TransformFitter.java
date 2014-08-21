@@ -5,6 +5,8 @@ import org.netlib.util.intW;
 
 
 /**
+ * Class that actually computes transform functions from correspondence points.
+ *
  * @author decamp
  */
 public class TransformFitter {
