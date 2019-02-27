@@ -7,9 +7,9 @@
 package bits.corrpoints;
 
 /**
- * Arbitrary degree transform. Due to presence of looping, this will provide
- * inferior performance to coded transforms.
- * worst performance of all transforms.
+ * Arbitrary degree transform.
+ * Due to looping, this will provide worse performance than fixed-size transforms.
+ * Worst performance of all transforms.
  *
  * @author decamp
  */
@@ -27,9 +27,42 @@ public class PolyNTransform implements PolyTransform {
     }
 
 
+    public boolean isApplicable() {
+        return mForward != null;
+    }
+
+
+    public boolean isInvertible() {
+        return mBackward != null;
+    }
+
+
+    public void apply( double x, double y, double[] out2x1, int outOff ) {
+        if( mForward == null ) {
+            throw new UnsupportedOperationException();
+        }
+        apply( mDegree, mForward, x, y, out2x1, outOff );
+    }
+
+
+    public void invert( double x, double y, double[] out2x1, int outOff ) {
+        if( mBackward == null ) {
+            throw new UnsupportedOperationException();
+        }
+        apply( mDegree, mBackward, x, y, out2x1, outOff );
+    }
+
+
+    public int degree() {
+        return mDegree;
+    }
+
+
+
     static int coeffCount( int degree ) {
         return (degree + 1) * (degree + 2);
     }
+
 
     static void apply( int degree, double[] coeffs, double x, double y, double[] out, int outOff ) {
         double yy  = 1.0;
@@ -47,34 +80,8 @@ public class PolyNTransform implements PolyTransform {
             yy *= y;
         }
 
-        out[outOff] = u;
+        out[outOff    ] = u;
         out[outOff + 1] = v;
-    }
-
-    public boolean isApplicable() {
-        return mForward != null;
-    }
-
-    public boolean isInvertible() {
-        return mBackward != null;
-    }
-
-    public void apply( double x, double y, double[] out2x1, int outOff ) {
-        if( mForward == null ) {
-            throw new UnsupportedOperationException();
-        }
-        apply( mDegree, mForward, x, y, out2x1, outOff );
-    }
-
-    public void invert( double x, double y, double[] out2x1, int outOff ) {
-        if( mBackward == null ) {
-            throw new UnsupportedOperationException();
-        }
-        apply( mDegree, mBackward, x, y, out2x1, outOff );
-    }
-
-    public int degree() {
-        return mDegree;
     }
 
 }

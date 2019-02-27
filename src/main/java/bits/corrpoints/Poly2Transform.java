@@ -28,18 +28,22 @@ public class Poly2Transform implements PolyTransform {
         return mForward != null;
     }
 
+
     public boolean isInvertible() {
         return mBackward != null;
     }    
-    
+
+
     public void apply(double x, double y, double[] out2x1, int outOff) {
         apply(mForward, x, y, out2x1, outOff);
     }
 
+
     public void invert(double x, double y, double[] out2x1, int outOff) {
         apply(mBackward, x, y, out2x1, outOff);
     }
-    
+
+
     public int degree() {
         return 2;
     }
@@ -51,10 +55,12 @@ public class Poly2Transform implements PolyTransform {
     double[] coeffsRef() {
         return mForward;
     }
-    
-    private static void apply(double[] coeffs, double x, double y, double[] out, int outOff) {
-        if(coeffs == null)
+
+
+    private static void apply( double[] coeffs, double x, double y, double[] out, int outOff ) {
+        if( coeffs == null ) {
             throw new UnsupportedOperationException();
+        }
         
         double v;
         

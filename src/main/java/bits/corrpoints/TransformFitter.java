@@ -11,7 +11,7 @@ import org.netlib.util.intW;
 
 
 /**
- * Class that actually computes transform functions from correspondence points.
+ * Computes transform functions from correspondence points.
  *
  * @author decamp
  */
@@ -49,13 +49,14 @@ public class TransformFitter {
      * @param errorOut        <code>errorOut[0]</code> will hold the resulting error code on return.  May be <code>null</code>.
      * @return a ProjectiveTransform object that optimally maps the provided fromPoints to toPoints.  On failure, returns <code>null</code>
      */
-    public static ProjectiveTransform corrPointsToProjectiveTransform( double[] fromPoints,
-                                                                       int fromPointsOff,
-                                                                       double[] toPoints,
-                                                                       int toPointsOff,
-                                                                       int nPoints,
-                                                                       int[] errorOut )
-    {
+    public static ProjectiveTransform corrPointsToProjectiveTransform(
+        double[] fromPoints,
+        int fromPointsOff,
+        double[] toPoints,
+        int toPointsOff,
+        int nPoints,
+        int[] errorOut
+    ) {
         //For projection:
         // u = (Ax + By + C) / (Gx + Hy + I);
         // v = (Dx + Ey + F) / (Gx + Hy + I);
@@ -70,7 +71,7 @@ public class TransformFitter {
         // [ u1  ] = [ x1  y1  1  0   0   0  -u1*x1  -u1*y1 ] * [A] 
         // [ u2  ] = [ x2  y2  1  0   0   0  -u2*x2  -u2*y2 ]   [B] 
         // [ u3  ] = [ x3  y3  1  0   0   0  -u3*x3  -u3*y3 ]   [C] 
-        // [ u1  ] = [ x4  y4  1  0   0   0  -u4*x4  -u4*y4 ]   [D] 
+        // [ u4  ] = [ x4  y4  1  0   0   0  -u4*x4  -u4*y4 ]   [D]
         // [ ... ]   [ ...                                  ]   [E] 
         // [ un  ] = [ xn  yn  1  0   0   0  -un*xn  -un*yn ]   [F] 
         // [ v1  ] = [ 0   0   0  x1  y1  1  -v1*x1  -v1*y1 ]   [G] 
@@ -139,25 +140,27 @@ public class TransformFitter {
         final intW infoBox     = new intW(0);
 
         //Solve for least squares using Divide-and-Conquer SVD.
-        Dgelsd.dgelsd( m,
-                       n,
-                       nrhs,
-                       aMat,
-                       0,
-                       m,
-                       bMat,
-                       0,
-                       dim1,
-                       sMat,
-                       0,
-                       rcond,
-                       rankBox,
-                       workMat,
-                       0,
-                       lwork,
-                       iWork,
-                       0,
-                       infoBox );
+        Dgelsd.dgelsd(
+            m,
+            n,
+            nrhs,
+            aMat,
+            0,
+            m,
+            bMat,
+            0,
+            dim1,
+            sMat,
+            0,
+            rcond,
+            rankBox,
+            workMat,
+            0,
+            lwork,
+            iWork,
+            0,
+            infoBox
+        );
         
         if( infoBox.val != 0 || rankBox.val < 8 ) {
             if( errorOut != null ) {
@@ -175,8 +178,7 @@ public class TransformFitter {
         
         //We always assumed that W = 1.0.
         forwardMat[8] = 1.0;
-        //System.out.println(MatFormat.formatToScreen(3, 3, forwardMat, 0, 3));
-        
+
         double[] backMat = forwardMat.clone();
         boolean hasBack  = false;
         
@@ -187,9 +189,6 @@ public class TransformFitter {
             hasBack = infoBox.val == 0;
         }
 
-        //System.out.println(MatFormat.formatToMatlab(3,3,forwardMat,0,3));
-        //System.out.println(MatFormat.formatToMatlab(3,3,backMat,0,3));
-        
         if( errorOut != null ) {
             errorOut[0] = ERR_OK;
         }
@@ -219,13 +218,14 @@ public class TransformFitter {
      * @param errorOut       <code>errorOut[0]</code> will hold the resulting error code on return.  May be <code>null</code>.
      * @return a Poly2Transform object that optimally maps the provided fromPoints to toPoints.  On failure, returns <code>null</code>
      */
-    public static Poly2Transform corrPointsToPoly2Transform( double[] fromPoints,
-                                                             int fromPointsOff,
-                                                             double[] toPoints,
-                                                             int toPointsOff,
-                                                             int nPoints,
-                                                             int[] errorOut )
-    {
+    public static Poly2Transform corrPointsToPoly2Transform(
+        double[] fromPoints,
+        int fromPointsOff,
+        double[] toPoints,
+        int toPointsOff,
+        int nPoints,
+        int[] errorOut
+    ) {
         //For 3rd degree polynomial:
         // u = A0 + B0x + C0y + D0xy + E0xx + F0yy
         // v = A1 + B1x + C1y + D1xy + E1xx + F1yy
@@ -255,8 +255,7 @@ public class TransformFitter {
         final int m    = nPoints;
         final int n    = k;
         final int dim0 = Math.min( m, n );
-        final int dim1 = Math.max( m, n );
-        
+
         final double[] xMat = new double[m * n];
         final double[] uMat = new double[m * 2];
         
@@ -275,10 +274,7 @@ public class TransformFitter {
             uMat[i  ] = toPoints[i*2   + toPointsOff];
             uMat[i+m] = toPoints[i*2+1 + toPointsOff];
         }
-        
-        //System.out.println(MatFormat.formatToScreen(m, n, xMat, 0, m));
-        //System.out.println(MatFormat.formatToScreen(m, 1, uMat, 0, m));
-        
+
         //Tedious workspace allocations.
         final int smlsiz = Ilaenv.ilaenv(9, "DGELSD", "", 0, 0, 0, 0);
         final int nrhs   = 2;
@@ -296,32 +292,34 @@ public class TransformFitter {
         
         //Solve Least squares using divide-and-conquer SVD.
         //Output will be stored in uMat.
-        Dgelsd.dgelsd( m,
-                       n,
-                       nrhs,
-                       xMat,
-                       0,
-                       m,
-                       uMat,
-                       0,
-                       m,
-                       sMat,
-                       0,
-                       rcond,
-                       rankBox,
-                       workMat,
-                       0,
-                       workMat.length,
-                       iWork,
-                       0,
-                       infoBox );
+        Dgelsd.dgelsd(
+            m,
+            n,
+            nrhs,
+            xMat,
+            0,
+            m,
+            uMat,
+            0,
+            m,
+            sMat,
+            0,
+            rcond,
+            rankBox,
+            workMat,
+            0,
+            workMat.length,
+            iWork,
+            0,
+            infoBox
+        );
         
         //Check if error or if input data had insufficient rank.
-        if(infoBox.val != 0 || rankBox.val < k) {
-            if(errorOut != null) {
-                if(infoBox.val == 0) {
+        if( infoBox.val != 0 || rankBox.val < k ) {
+            if( errorOut != null ) {
+                if( infoBox.val == 0 ) {
                     errorOut[0] = ERR_INSUFFICIENT_RANK;
-                }else{
+                } else {
                     errorOut[0] = infoBox.val < 0 ? ERR_ILLEGAL_VALUE : ERR_DID_NOT_CONVERGE;
                 }
             }
@@ -365,22 +363,23 @@ public class TransformFitter {
      * @param errorOut        <code>errorOut[0]</code> will hold the resulting error code on return.  May be <code>null</code>.
      * @return a Poly3Transform object that optimally maps the provided fromPoints to toPoints.  On failure, returns <code>null</code>
      */
-    public static Poly3Transform corrPointsToPoly3Transform( double[] fromPoints,
-                                                             int fromPointsOff,
-                                                             double[] toPoints,
-                                                             int toPointsOff,
-                                                             int nPoints,
-                                                             int[] errorOut )
-    {
+    public static Poly3Transform corrPointsToPoly3Transform(
+        double[] fromPoints,
+        int fromPointsOff,
+        double[] toPoints,
+        int toPointsOff,
+        int nPoints,
+        int[] errorOut
+    ) {
         // For 3rd degree polynomial:
         //  u = A0 + B0x + C0y + D0xy + E0xx + F0yy +G0xxy + H0yyx + I0xxx + J0yyy
         //  v = A1 + B1x + C1y + D1xy + E1xx + F1yy +G1xxy + H1yyx + I1xxx + J1yyy
         //
         // Separate knows from unknowns.
-        //  [u0 v0] = [1.0 x0 y0 x0*y0 x0*x0 y0y0 x0*x0*y0 y0*y0*x0 x0*x0*x0 y0*y0*y0] * [A0 B0 C0 D0 E0 F0 G0 H0 I0 J0]'
-        //  [u1 v1] = [1.0 x1 y1 x1*y1 x1*x1 y1y1 x1*x1*y1 y1*y1*x1 x1*x1*x1 y1*y1*y1]   [A1 B1 C1 D1 E1 F1 G1 H1 I1 J1]
+        //  [u0 v0] = [1.0 x0 y0 x0*y0 x0*x0 y0*y0 x0*x0*y0 y0*y0*x0 x0*x0*x0 y0*y0*y0] * [A0 B0 C0 D0 E0 F0 G0 H0 I0 J0]'
+        //  [u1 v1] = [1.0 x1 y1 x1*y1 x1*x1 y1*y1 x1*x1*y1 y1*y1*x1 x1*x1*x1 y1*y1*y1]   [A1 B1 C1 D1 E1 F1 G1 H1 I1 J1]
         //    ...   =    ...
-        //  [un vn] = [1.0 xn yn xn*yn xn*xn ynyn xn*xn*yn yn*yn*xn xn*xn*xn yn*yn*yn]
+        //  [un vn] = [1.0 xn yn xn*yn xn*xn yn*yn xn*xn*yn yn*yn*xn xn*xn*xn yn*yn*yn]
         //
         // Restated:
         //  postPoints_nx2 = xMat_nx10 * coeffs_10x2
@@ -400,8 +399,7 @@ public class TransformFitter {
         final int m    = nPoints;
         final int n    = 10;
         final int dim0 = Math.min(m, n);
-        final int dim1 = Math.max(m, n);
-        
+
         final double[] xMat = new double[m * n];
         final double[] uMat = new double[m * 2];
         
@@ -425,11 +423,8 @@ public class TransformFitter {
             uMat[i+m] = toPoints[i*2+1 + toPointsOff];
         }
         
-        //System.out.println(MatFormat.formatToScreen(m, n, xMat, 0, m));
-        //System.out.println(MatFormat.formatToScreen(m, 1, uMat, 0, m));
-        
         //Tedious workspace allocations.
-        final int smlsiz = Ilaenv.ilaenv(9, "DGELSD", "", 0, 0, 0, 0);
+        final int smlsiz = Ilaenv.ilaenv( 9, "DGELSD", "", 0, 0, 0, 0 );
         final int nrhs   = 2;
         final int nlvl   = Math.max( 0, (int)( Math.log(dim0 / (smlsiz+1.0)) / LOG_2 )) + 1;
         final int lwork  = 12 * dim0 + 2 * dim0 * smlsiz + 8 * dim0 * nlvl + dim0 * nrhs + (smlsiz + 1) * (smlsiz + 1);
@@ -445,25 +440,27 @@ public class TransformFitter {
         
         //Solve Least squares using divide-and-conquer SVD.
         //Output will be stored in uMat.
-        Dgelsd.dgelsd( m,
-                       n,
-                       nrhs,
-                       xMat,
-                       0,
-                       m,
-                       uMat,
-                       0,
-                       m,
-                       sMat,
-                       0,
-                       rcond,
-                       rankBox,
-                       workMat,
-                       0,
-                       workMat.length,
-                       iWork,
-                       0,
-                       infoBox );
+        Dgelsd.dgelsd(
+            m,
+            n,
+            nrhs,
+            xMat,
+            0,
+            m,
+            uMat,
+            0,
+            m,
+            sMat,
+            0,
+            rcond,
+            rankBox,
+            workMat,
+            0,
+            workMat.length,
+            iWork,
+            0,
+            infoBox
+        );
         
         //Check if error or if input data had insufficient rank.
         if( infoBox.val != 0 || rankBox.val < k ) {
@@ -513,14 +510,15 @@ public class TransformFitter {
      * @param errorOut       <code>errorOut[0]</code> will hold the resulting error code on return.  May be <code>null</code>.
      * @return a PolyTransform object that optimally maps the provided fromPoints to toPoints.  On failure, returns <code>null</code>
      */
-    public static PolyTransform corrPointsToPolyTransform( double[] fromPoints,
-                                                           int fromPointsOff,
-                                                           double[] toPoints,
-                                                           int toPointsOff,
-                                                           int nPoints,
-                                                           int degree,
-                                                           int[] errorOut )
-    {
+    public static PolyTransform corrPointsToPolyTransform(
+        double[] fromPoints,
+        int fromPointsOff,
+        double[] toPoints,
+        int toPointsOff,
+        int nPoints,
+        int degree,
+        int[] errorOut
+    ) {
         //For N-degree polynomial:
         // u = A0 + B0x + C0x^2 ... K0y^n
         // v = A1 + B1x + C1x^2 ... K1y^n
@@ -557,8 +555,7 @@ public class TransformFitter {
         final int m    = nPoints;
         final int n    = k;
         final int dim0 = Math.min( m, n );
-        //final int dim1 = Math.max(m, n);
-        
+
         final double[] xMat = new double[ m * n ];
         final double[] uMat = new double[ m * 2 ];
 
@@ -578,12 +575,9 @@ public class TransformFitter {
                 yy *= y;
             }
 
-            uMat[i] = toPoints[i * 2 + toPointsOff];
+            uMat[i    ] = toPoints[i * 2 +     toPointsOff];
             uMat[i + m] = toPoints[i * 2 + 1 + toPointsOff];
         }
-        
-        //System.out.println(MatFormatter.formatToScreen(m, n, xMat, 0, m));
-        //System.out.println(MatFormatter.formatToScreen(m, 2, uMat, 0, m));
         
         //Tedious workspace allocations.
         final int smlsiz = Ilaenv.ilaenv( 9, "DGELSD", "", 0, 0, 0, 0 );
@@ -602,25 +596,27 @@ public class TransformFitter {
 
         //Solve Least squares using divide-and-conquer SVD.
         //Output will be stored in uMat.
-        Dgelsd.dgelsd( m,
-                       n,
-                       nrhs,
-                       xMat,
-                       0,
-                       m,
-                       uMat,
-                       0,
-                       m,
-                       sMat,
-                       0,
-                       rcond,
-                       rankBox,
-                       workMat,
-                       0,
-                       workMat.length,
-                       iWork,
-                       0,
-                       infoBox );
+        Dgelsd.dgelsd(
+            m,
+            n,
+            nrhs,
+            xMat,
+            0,
+            m,
+            uMat,
+            0,
+            m,
+            sMat,
+            0,
+            rcond,
+            rankBox,
+            workMat,
+            0,
+            workMat.length,
+            iWork,
+            0,
+            infoBox
+        );
         
         //Check if error or if input data had insufficient rank.
         if( infoBox.val != 0 || rankBox.val < k ) {
@@ -638,12 +634,14 @@ public class TransformFitter {
         switch( degree ) {
         case 1:
         {
-            return new LinearTransform( uMat[0  ], 
-                                        uMat[1  ],
-                                        uMat[2  ],
-                                        uMat[m  ],
-                                        uMat[m+1],
-                                        uMat[m+2] );
+            return new LinearTransform(
+                uMat[0  ],
+                uMat[1  ],
+                uMat[2  ],
+                uMat[m  ],
+                uMat[m+1],
+                uMat[m+2]
+            );
         }
         
         case 2:
@@ -665,26 +663,28 @@ public class TransformFitter {
         {
             // This coefficient reordering is a little ridiculous,
             // but I didn't want to make any changes to Poly3Transform.
-            double[] cf ={ uMat[0  ],
-                           uMat[1  ],
-                           uMat[4  ],
-                           uMat[5  ],
-                           uMat[2  ],
-                           uMat[7  ],
-                           uMat[6  ],
-                           uMat[8  ],
-                           uMat[3  ],
-                           uMat[9  ],
-                           uMat[  m],
-                           uMat[1+m],
-                           uMat[4+m],
-                           uMat[5+m],
-                           uMat[2+m],
-                           uMat[7+m],
-                           uMat[6+m],
-                           uMat[8+m], 
-                           uMat[3+m],
-                           uMat[9+m] };
+            double[] cf ={
+                uMat[0  ],
+                uMat[1  ],
+                uMat[4  ],
+                uMat[5  ],
+                uMat[2  ],
+                uMat[7  ],
+                uMat[6  ],
+                uMat[8  ],
+                uMat[3  ],
+                uMat[9  ],
+                uMat[  m],
+                uMat[1+m],
+                uMat[4+m],
+                uMat[5+m],
+                uMat[2+m],
+                uMat[7+m],
+                uMat[6+m],
+                uMat[8+m],
+                uMat[3+m],
+                uMat[9+m]
+            };
             
             return new Poly3Transform( cf, null );
         }
@@ -701,6 +701,5 @@ public class TransformFitter {
         }}
         
     }
-    
-    
+
 }

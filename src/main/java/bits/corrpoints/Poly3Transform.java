@@ -12,8 +12,7 @@ package bits.corrpoints;
  * @author decamp
  */
 public class Poly3Transform implements PolyTransform {
-    
-    
+
     private final double[] mForward;
     private final double[] mBackward;
     
@@ -22,23 +21,27 @@ public class Poly3Transform implements PolyTransform {
         mForward  = forward10x2Ref;
         mBackward = backward10x2Ref;
     }
-    
-    
+
+
     public boolean isApplicable() {
         return mForward != null;
     }
 
+
     public boolean isInvertible() {
         return mBackward != null;
-    }    
-
-    public void apply(double x, double y, double[] out2x1, int outOff) {
-        apply(mForward, x, y, out2x1, outOff);
     }
 
-    public void invert(double x, double y, double[] out2x1, int outOff) {
-        apply(mBackward, x, y, out2x1, outOff);
+
+    public void apply( double x, double y, double[] out2x1, int outOff ) {
+        apply( mForward, x, y, out2x1, outOff );
     }
+
+
+    public void invert( double x, double y, double[] out2x1, int outOff ) {
+        apply( mBackward, x, y, out2x1, outOff );
+    }
+
 
     public int degree() {
         return 3;
@@ -51,10 +54,12 @@ public class Poly3Transform implements PolyTransform {
     double[] coeffsRef() {
         return mForward;
     }
-    
-    private static void apply(double[] coeffs, double x, double y, double[] out, int outOff) {
-        if(coeffs == null)
+
+
+    private static void apply( double[] coeffs, double x, double y, double[] out, int outOff ) {
+        if( coeffs == null ) {
             throw new UnsupportedOperationException();
+        }
         
         double v;
         

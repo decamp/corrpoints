@@ -41,14 +41,15 @@ public class MatFormatter {
     }
 
 
-    public static void formatToScreen( int m,
-                                       int n,
-                                       double[] mat,
-                                       int off,
-                                       int stride,
-                                       StringBuilder s,
-                                       String prefix )
-    {
+    public static void formatToScreen(
+        int m,
+        int n,
+        double[] mat,
+        int off,
+        int stride,
+        StringBuilder s,
+        String prefix
+    ) {
         s.append( prefix ).append( "Matrix (" ).append( m ).append( "x" ).append( n ).append( ")\n" );
         for( int y = 0; y < m; y++ ) {
             s.append( prefix );

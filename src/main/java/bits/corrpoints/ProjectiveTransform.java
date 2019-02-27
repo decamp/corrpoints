@@ -36,21 +36,40 @@ public class ProjectiveTransform implements Transform22 {
         out2x1[outOff + 1] = b / c;
     }
 
+
     public boolean isApplicable() {
         return mForward != null;
     }
+
 
     public boolean isInvertible() {
         return mBackward != null;
     }
 
+
     public void apply( double x, double y, double[] out2x1, int outOff ) {
         apply( mForward, x, y, out2x1, outOff );
     }
 
+
     public void invert( double x, double y, double[] out2x1, int outOff ) {
         apply( mBackward, x, y, out2x1, outOff );
     }
+
+    /**
+     * @return 3x3 column-major homography matrix that performs backward mapping.
+     */
+    public double[] getBackwardMatrix() {
+        return coeffsToMatrix( mForward );
+    }
+
+    /**
+     * @return 3x3 column-major homography matrix that performs forward mapping.
+     */
+    public double[] getForward3x3Matrix() {
+        return coeffsToMatrix( mForward );
+    }
+
 
     /**
      * For debugging.
@@ -59,8 +78,24 @@ public class ProjectiveTransform implements Transform22 {
         return mForward;
     }
 
-    double[] inverseCoeffrsRef() {
+
+    double[] inverseCoeffsRef() {
         return mBackward;
+    }
+
+
+    private static double[] coeffsToMatrix( double[] coeffs ) {
+        return new double[]{
+            coeffs[0],
+            coeffs[3],
+            coeffs[6],
+            coeffs[1],
+            coeffs[4],
+            coeffs[7],
+            coeffs[2],
+            coeffs[5],
+            coeffs[8]
+        };
     }
 
 
