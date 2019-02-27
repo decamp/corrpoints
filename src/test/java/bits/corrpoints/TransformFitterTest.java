@@ -99,9 +99,9 @@ public class TransformFitterTest {
         if(trans == null) {
             Assert.assertTrue("Error code: " + err[0], false);
         }
-        
+
         assertNear(trans.coeffsRef(), 0, matlabForward, 0, 9);
-        assertNear(trans.inverseCoeffrsRef(), 0, matlabBackward, 0, 9);
+        assertNear(trans.inverseCoeffsRef(), 0, matlabBackward, 0, 9);
     }
 
 
